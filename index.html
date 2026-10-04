@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Signal flags</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='10' y='10' width='80' height='80' fill='%23fff'/%3E%3Cpolygon points='50,10 90,50 50,90 10,50' fill='%23c8102e'/%3E%3C/svg%3E">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body { margin: 0; line-height: 1.5; font-size: 1rem; }
+
+/* ---------- Look-specific text ---------- */
+body:not([data-look="plain"]) .only-plain,
+body:not([data-look="chart"]) .only-chart,
+body:not([data-look="bridge"]) .only-bridge { display: none !important; }
+
+/* ---------- Tokens: plain ---------- */
+body[data-look="plain"] {
+  --bg: #e9edf1; --card: #f8fafb; --ink: #17212b; --muted: #5a6875; --rule: #c9d1d9; --outline: #2a333c;
+  --accent: #1f4e9e; --accent-ink: #ffffff; --warn-bg: #fff3c4; --warn-ink: #5c4600; --field: #ffffff;
+}
+/* ---------- Tokens: chart room ---------- */
+body[data-look="chart"] {
+  --bg: #4d5a3f; --paper: #efe6cc; --paper-edge: #d6c9a4; --grid: rgba(70, 90, 110, .14);
+  --ink: #26231c; --muted: #6b6455; --rule: #6b6455; --red: #a3272c; --outline: #2a2a2a; --accent: #a3272c;
+}
+/* ---------- Tokens: bridge ---------- */
+body[data-look="bridge"] {
+  --haze: #8e969c; --haze-dark: #737b81; --haze-edge: #5f666b; --placard: #141414; --engrave: #f2f2f2;
+  --screw: #b9bec2; --cubby: #5d6469; --outline: #222; --accent: #f3c316; --ink: #f2f2f2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body[data-look="plain"] {
+    --bg: #131a21; --card: #1c252e; --ink: #e6ebef; --muted: #96a3af; --rule: #2e3a46; --outline: #8996a3;
+    --accent: #6d9be6; --accent-ink: #0d1520; --warn-bg: #3a3214; --warn-ink: #f0d277; --field: #0f151b;
+  }
+  :root:not([data-theme="light"]) body[data-look="chart"] {
+    --bg: #1a0808; --paper: #2a0f0f; --paper-edge: #3a1515; --grid: rgba(255, 90, 90, .12);
+    --ink: #ff8a80; --muted: #c4615a; --rule: #c4615a; --red: #ff6b6b; --outline: #7a3a36; --accent: #ff6b6b;
+  }
+  :root:not([data-theme="light"]) body[data-look="bridge"] {
+    --haze: #4b5156; --haze-dark: #3d4247; --haze-edge: #2e3236; --placard: #0b0b0b; --engrave: #d8d8d8;
+    --screw: #7d8388; --cubby: #33383c; --ink: #d8d8d8;
+  }
+}
+:root[data-theme="dark"] body[data-look="plain"] {
+  --bg: #131a21; --card: #1c252e; --ink: #e6ebef; --muted: #96a3af; --rule: #2e3a46; --outline: #8996a3;
+  --accent: #6d9be6; --accent-ink: #0d1520; --warn-bg: #3a3214; --warn-ink: #f0d277; --field: #0f151b;
+}
+:root[data-theme="dark"] body[data-look="chart"] {
+  --bg: #1a0808; --paper: #2a0f0f; --paper-edge: #3a1515; --grid: rgba(255, 90, 90, .12);
+  --ink: #ff8a80; --muted: #c4615a; --rule: #c4615a; --red: #ff6b6b; --outline: #7a3a36; --accent: #ff6b6b;
+}
+:root[data-theme="dark"] body[data-look="bridge"] {
+  --haze: #4b5156; --haze-dark: #3d4247; --haze-edge: #2e3236; --placard: #0b0b0b; --engrave: #d8d8d8;
+  --screw: #7d8388; --cubby: #33383c; --ink: #d8d8d8;
+}
+
+/* ---------- Shared structure ---------- */
+main { max-width: 46rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+h1 { margin: 0 0 1rem; }
+.msghdr { display: none; white-space: pre-wrap; margin: 0 0 1rem; font: inherit; }
+.field-label { display: block; margin-bottom: .35rem; }
+#msg { width: 100%; font: inherit; }
+.hint { margin: .35rem 0 0; font-size: .85rem; }
+.controls { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: center; margin-top: 1rem; }
+.ctl { display: flex; flex-direction: column; gap: .35rem; }
+.ctl-label { display: none; }
+.seg { display: inline-flex; }
+.seg button, .btn { font: inherit; cursor: pointer; }
+.toggle { display: inline-flex; gap: .45rem; align-items: center; cursor: pointer; }
+.rk { display: none; }
+.warn { margin-top: 1rem; font-size: .9rem; }
+.warn[hidden] { display: none !important; }
+#strip { margin-top: 1.25rem; display: flex; flex-wrap: wrap; gap: .6rem 1.4rem; align-items: center; min-height: 3rem; }
+#strip .group { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; }
+#strip .cell svg { height: 2.2rem; width: auto; display: block; }
+#strip .tag { display: none; }
+#hoists { counter-reset: row; }
+.hoist { margin-top: 1.5rem; }
+.hoist h2 { font-size: 1.05rem; margin: 0 0 .5rem; }
+.row { display: grid; grid-template-columns: 5.5rem 1fr; gap: .9rem; align-items: start; padding: .7rem 0; counter-increment: row; }
+.row::before { display: none; }
+.row .flag svg { width: 100%; height: auto; display: block; }
+.name { font-weight: 700; line-height: 1.25; }
+.name .letter { display: inline-block; min-width: 1.2em; }
+.meaning { margin-top: .15rem; }
+.note { margin-top: .25rem; font-size: .85rem; }
+.btfoot { display: none; }
+footer { margin-top: 2.5rem; font-size: .8rem; }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  background: #17212b; color: #fff; padding: .5rem .9rem; border-radius: 6px; font-size: .9rem;
+  opacity: 0; transition: opacity .2s; pointer-events: none; font-family: "Segoe UI", Roboto, system-ui, sans-serif;
+}
+.toast.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* =============== PLAIN =============== */
+body[data-look="plain"] { background: var(--bg); color: var(--ink); font-family: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif; }
+body[data-look="plain"] h1 { font-size: 1.75rem; line-height: 1.15; }
+body[data-look="plain"] .field-label { font-weight: 600; }
+body[data-look="plain"] #msg {
+  font-size: 1.25rem; padding: .6rem .75rem; border: 1.5px solid var(--rule); border-radius: 6px;
+  background: var(--field); color: var(--ink); text-transform: uppercase;
+}
+body[data-look="plain"] #msg:focus { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+body[data-look="plain"] .hint, body[data-look="plain"] footer, body[data-look="plain"] .note { color: var(--muted); }
+body[data-look="plain"] .seg { border: 1.5px solid var(--accent); border-radius: 6px; overflow: hidden; }
+body[data-look="plain"] .seg button { font-weight: 600; border: 0; padding: .45rem .9rem; background: transparent; color: var(--accent); }
+body[data-look="plain"] .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+body[data-look="plain"] .toggle input { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); }
+body[data-look="plain"] .btn { font-weight: 600; padding: .45rem .9rem; border-radius: 6px; border: 1.5px solid var(--rule); background: var(--card); color: var(--ink); }
+body[data-look="plain"] .btn[disabled] { opacity: .5; cursor: default; }
+body[data-look="plain"] .warn { padding: .7rem .85rem; border-radius: 6px; background: var(--warn-bg); color: var(--warn-ink); }
+body[data-look="plain"] #strip { padding: .9rem; border-radius: 6px; background: var(--card); }
+body[data-look="plain"] .empty { color: var(--muted); }
+body[data-look="plain"] .hoist h2 { padding-bottom: .3rem; border-bottom: 1px solid var(--rule); color: var(--muted); font-weight: 600; }
+body[data-look="plain"] .row { border-bottom: 1px solid var(--rule); }
+body[data-look="plain"] .row:last-child { border-bottom: 0; }
+body[data-look="plain"] .meaning.none { color: var(--muted); font-style: italic; }
+body[data-look="plain"] .lookbar { margin-bottom: 1rem; }
+body[data-look="plain"] .ctl, body[data-look="chart"] .ctl { align-items: flex-start; }
+
+/* =============== CHART ROOM =============== */
+body[data-look="chart"] { background: var(--bg); color: var(--ink); font-family: "Courier New", Courier, "Liberation Mono", monospace; }
+body[data-look="chart"] main {
+  margin: .75rem auto 1.5rem; width: calc(100% - 1.5rem);
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+  border: 1px solid var(--paper-edge); box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  padding: 1.1rem 1rem 1.5rem; font-size: .9rem; line-height: 1.55; text-transform: uppercase; position: relative;
+}
+body[data-look="chart"] main::before {
+  content: "UNOFFICIAL"; position: absolute; top: 4.4rem; right: .8rem; border: 2px solid var(--red); color: var(--red);
+  font-weight: 700; padding: .05rem .45rem; transform: rotate(-6deg); font-size: .72rem; letter-spacing: .12em; opacity: .85;
+}
+body[data-look="chart"] h1 { display: none; }
+body[data-look="chart"] .msghdr { display: block; }
+body[data-look="chart"] .field-label, body[data-look="chart"] .hint { color: var(--muted); font-size: .78rem; }
+body[data-look="chart"] #msg {
+  font-size: 1.15rem; color: var(--ink); background: transparent; border: 0; border-bottom: 2px solid var(--muted);
+  padding: .2rem 0; text-transform: uppercase; letter-spacing: .15em; border-radius: 0;
+}
+body[data-look="chart"] #msg::placeholder { color: var(--muted); opacity: .7; }
+body[data-look="chart"] .controls { gap: .4rem 1rem; font-size: .82rem; }
+body[data-look="chart"] .seg { gap: .9rem; flex-wrap: wrap; }
+body[data-look="chart"] .seg button { background: none; border: 0; padding: .15rem 0; color: var(--ink); text-transform: uppercase; }
+body[data-look="chart"] .seg button::before { content: "[ ] "; white-space: pre; }
+body[data-look="chart"] .seg button[aria-pressed="true"]::before { content: "[X] "; }
+body[data-look="chart"] .toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+body[data-look="chart"] .toggle .tg::before { content: "[ ] "; white-space: pre; }
+body[data-look="chart"] .toggle input:checked + .tg::before { content: "[X] "; }
+body[data-look="chart"] .toggle input:focus-visible + .tg { outline: 3px solid var(--accent); outline-offset: 2px; }
+body[data-look="chart"] .btn { background: none; border: 1px dashed var(--ink); color: var(--ink); padding: .15rem .5rem; text-transform: uppercase; }
+body[data-look="chart"] .btn[disabled] { opacity: .45; cursor: default; }
+body[data-look="chart"] .lookbar { margin: 0 0 1rem; font-size: .82rem; padding-bottom: .6rem; border-bottom: 1px solid var(--muted); }
+body[data-look="chart"] .warn { border-left: 3px solid var(--red); padding-left: .6rem; font-size: .8rem; }
+body[data-look="chart"] #strip { padding: .6rem 0; border-top: 1px dashed var(--muted); border-bottom: 1px dashed var(--muted); gap: .6rem 1rem; }
+body[data-look="chart"] #strip .group::before, body[data-look="chart"] #strip .group::after { content: ""; width: 1rem; height: 2px; background: var(--muted); }
+body[data-look="chart"] .empty { color: var(--muted); }
+body[data-look="chart"] .hoist h2 { font-size: .9rem; font-weight: 700; text-decoration: underline; }
+body[data-look="chart"] .row { grid-template-columns: 1.8rem 2.8rem 1fr; gap: .5rem; padding: .3rem 0; }
+body[data-look="chart"] .row::before { display: block; content: counter(row) "."; }
+body[data-look="chart"] .row .flag { padding-top: .2rem; }
+body[data-look="chart"] .name { font-weight: 700; display: inline; }
+body[data-look="chart"] .meaning, body[data-look="chart"] .note { color: var(--ink); }
+body[data-look="chart"] .meaning.none, body[data-look="chart"] .note { color: var(--muted); }
+body[data-look="chart"] .btfoot { display: block; margin-top: 1rem; }
+body[data-look="chart"] footer { color: var(--muted); font-size: .72rem; }
+
+/* =============== BRIDGE =============== */
+body[data-look="bridge"] {
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 2px, transparent 2px 5px), linear-gradient(180deg, var(--haze), var(--haze-dark));
+  min-height: 100vh; color: var(--ink);
+  font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+}
+body[data-look="bridge"] .pl, body[data-look="bridge"] h1, body[data-look="bridge"] .field-label,
+body[data-look="bridge"] .ctl-label, body[data-look="bridge"] .hoist h2, body[data-look="bridge"] .txt, body[data-look="bridge"] .btn {
+  position: relative; background: var(--placard); color: var(--engrave); border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 2px 0 rgba(0,0,0,.35);
+  text-transform: uppercase; letter-spacing: .1em;
+}
+body[data-look="bridge"] h1::before, body[data-look="bridge"] h1::after,
+body[data-look="bridge"] .field-label::before, body[data-look="bridge"] .field-label::after,
+body[data-look="bridge"] .ctl-label::before, body[data-look="bridge"] .ctl-label::after,
+body[data-look="bridge"] .hoist h2::before, body[data-look="bridge"] .hoist h2::after,
+body[data-look="bridge"] .txt::before, body[data-look="bridge"] .txt::after {
+  content: ""; position: absolute; top: 50%; width: .45rem; height: .45rem; margin-top: -.225rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0 10%, var(--screw) 40%, #555 100%);
+}
+body[data-look="bridge"] h1::before, body[data-look="bridge"] .field-label::before, body[data-look="bridge"] .ctl-label::before,
+body[data-look="bridge"] .hoist h2::before, body[data-look="bridge"] .txt::before { left: .45rem; }
+body[data-look="bridge"] h1::after, body[data-look="bridge"] .field-label::after, body[data-look="bridge"] .ctl-label::after,
+body[data-look="bridge"] .hoist h2::after, body[data-look="bridge"] .txt::after { right: .45rem; }
+body[data-look="bridge"] h1 { font-size: 1.35rem; text-align: center; padding: .65rem 1.6rem; letter-spacing: .14em; }
+body[data-look="bridge"] .field-label, body[data-look="bridge"] .ctl-label, body[data-look="bridge"] .hoist h2 {
+  display: table; margin: 0 auto .45rem; font-size: .72rem; font-weight: 400; padding: .3rem 1.4rem;
+}
+body[data-look="bridge"] #msg {
+  font-size: 1.4rem; letter-spacing: .3em; text-transform: uppercase; text-align: center; padding: .55rem;
+  color: #7cff9b; background: #0d1410; border: 3px solid #2b3135; border-radius: 4px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6); text-shadow: 0 0 6px rgba(124,255,155,.5);
+}
+body[data-look="bridge"] #msg::placeholder { color: #3f7a50; text-shadow: none; letter-spacing: .1em; }
+body[data-look="bridge"] .hint { text-align: center; color: var(--engrave); opacity: .8; font-size: .78rem; }
+body[data-look="bridge"] .controls { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+body[data-look="bridge"] .ctl { background: var(--haze-edge); border-radius: 4px; padding: .5rem; }
+body[data-look="bridge"] .ctl-label { display: table; }
+body[data-look="bridge"] .ctl.share { grid-column: 1 / -1; }
+body[data-look="bridge"] .seg, body[data-look="bridge"] .rk { display: flex; border-radius: 3px; overflow: hidden; border: 2px solid #1c1f22; }
+body[data-look="bridge"] .seg button, body[data-look="bridge"] .rk span {
+  flex: 1; border: 0; padding: .4rem .3rem; font-weight: 700; letter-spacing: .08em; font-size: .82rem;
+  background: #2b3034; color: #8b9298; text-transform: uppercase; text-align: center;
+}
+body[data-look="bridge"] .seg button[aria-pressed="true"] { background: #e8e2c8; color: #1a1a1a; box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+body[data-look="bridge"] .toggle { display: block; }
+body[data-look="bridge"] .toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+body[data-look="bridge"] .toggle input:not(:checked) + .tg .rk-off,
+body[data-look="bridge"] .toggle input:checked + .tg .rk-on { background: #e8e2c8; color: #1a1a1a; box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+body[data-look="bridge"] .toggle input:focus-visible + .tg .rk { outline: 3px solid var(--accent); outline-offset: 2px; }
+body[data-look="bridge"] .btn { width: 100%; border: 0; padding: .5rem; font-weight: 700; font-size: .85rem; }
+body[data-look="bridge"] .btn[disabled] { opacity: .5; cursor: default; }
+body[data-look="bridge"] .lookbar { margin-bottom: 1rem; }
+body[data-look="bridge"] .lookbar .ctl { background: var(--haze-edge); }
+body[data-look="bridge"] .warn {
+  background: #f3c316; color: #111; border: 3px solid #111; border-radius: 3px; padding: .5rem .7rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .05em; font-size: .78rem; text-align: center;
+}
+body[data-look="bridge"] #strip { gap: .6rem; }
+body[data-look="bridge"] #strip .group {
+  background: var(--cubby); border: 3px solid var(--haze-edge); border-radius: 4px; padding: .45rem; gap: .4rem; flex: 1 1 100%;
+}
+body[data-look="bridge"] #strip .cell {
+  background: #2a2e31; border-radius: 2px; padding: .4rem .35rem .3rem; display: flex; flex-direction: column; align-items: center; gap: .3rem;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,.55); min-width: 4.3rem;
+}
+body[data-look="bridge"] #strip .cell svg { height: 2rem; }
+body[data-look="bridge"] #strip .tag {
+  display: block; background: linear-gradient(180deg, #d4b45e, #b08d3c); color: #2a2008; font-weight: 700; font-size: .62rem;
+  letter-spacing: .08em; text-transform: uppercase; padding: .05rem .35rem; border-radius: 2px; white-space: nowrap;
+}
+body[data-look="bridge"] .empty { color: var(--engrave); opacity: .8; }
+body[data-look="bridge"] .hoist h2 { margin-bottom: .6rem; }
+body[data-look="bridge"] .row { grid-template-columns: 4.5rem 1fr; gap: .7rem; align-items: center; padding: .35rem 0; }
+body[data-look="bridge"] .txt { padding: .5rem 1.4rem; font-size: .8rem; line-height: 1.35; letter-spacing: .05em; }
+body[data-look="bridge"] .name { font-size: .95rem; letter-spacing: .12em; color: #fff; }
+body[data-look="bridge"] .meaning.none, body[data-look="bridge"] .note { opacity: .7; }
+body[data-look="bridge"] .note { font-size: .72rem; }
+body[data-look="bridge"] footer { color: var(--engrave); opacity: .75; text-align: center; }
+</style>
+</head>
+<body data-look="chart">
+<main>
+  <div class="lookbar">
+    <div class="ctl">
+      <span class="ctl-label">Display</span>
+      <div class="seg" role="group" aria-label="Appearance">
+        <button type="button" data-look-btn="chart" aria-pressed="true">Chart room</button>
+        <button type="button" data-look-btn="bridge" aria-pressed="false">Bridge</button>
+        <button type="button" data-look-btn="plain" aria-pressed="false">Plain</button>
+      </div>
+    </div>
+  </div>
+
+  <h1>Signal flags</h1>
+  <pre class="msghdr" id="msghdr"></pre>
+
+  <label class="field-label" for="msg"><span class="only-plain">Your message</span><span class="only-chart">Message text</span><span class="only-bridge">Message</span></label>
+  <input id="msg" type="text" maxlength="60" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Try your name">
+  <p class="hint">Letters and numbers only. Spaces start a new hoist.</p>
+
+  <div class="controls">
+    <div class="ctl">
+      <span class="ctl-label">Signal book</span>
+      <div class="seg" role="group" aria-label="Signal book">
+        <button type="button" id="mode-ics" aria-pressed="true"><span class="only-plain">International</span><span class="only-chart">ICS</span><span class="only-bridge">ICS</span></button>
+        <button type="button" id="mode-navy" aria-pressed="false"><span class="only-plain">US Navy</span><span class="only-chart">USN</span><span class="only-bridge">Navy</span></button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label">Hoist</span>
+      <label class="toggle"><input type="checkbox" id="real"><span class="tg"><span class="only-plain">Realistic hoist</span><span class="only-chart">Realistic hoist</span><span class="only-bridge rk"><span class="rk-off">Plain</span><span class="rk-on">Real</span></span><span class="sr only-bridge">Realistic hoist</span></span></label>
+    </div>
+    <div class="ctl share">
+      <span class="ctl-label">Share</span>
+      <button type="button" class="btn" id="share" disabled>Copy link</button>
+    </div>
+  </div>
+
+  <div class="warn" id="navywarn" hidden>
+    <span class="only-plain">Navy mode is unofficial. These meanings come from publicly available sources, and many letters have no publicly known single-flag meaning. The real tactical signal book isn't public. Don't run a ship off this page.</span>
+    <span class="only-chart">RMKS/NAVY MEANINGS COMPILED FROM PUBLIC SOURCES. MANY LETTERS HAVE NO PUBLIC MEANING. GAPS ARE INTENTIONAL. NOT FOR NAVIGATION OR SHIPHANDLING.//</span>
+    <span class="only-bridge">Caution: unofficial meanings. Many letters have no public meaning. Not for operational use.</span>
+  </div>
+
+  <div id="strip" aria-label="Flag preview"></div>
+  <div id="hoists"></div>
+
+  <div class="btfoot">BT<br>#0001<br>NNNN</div>
+
+  <footer>ICS meanings paraphrased from Pub. 102, International Code of Signals. Nothing you type is saved or sent anywhere; the message lives only in the link.</footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Drawing ----------
+  var C = { R: "#c8102e", Y: "#ffcd00", B: "#1f4e9e", K: "#1b1b1b", W: "#ffffff" };
+  var uid = 0;
+  function rect(x, y, w, h, c) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + C[c] + '"/>'; }
+  function poly(pts, c) { return '<polygon points="' + pts.map(function (p) { return p.join(","); }).join(" ") + '" fill="' + C[c] + '"/>'; }
+  function circ(cx, cy, r, c) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + C[c] + '"/>'; }
+  function line(x1, y1, x2, y2, w, c) { return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + C[c] + '" stroke-width="' + w + '"/>'; }
+  function vstripes(W, H, cols) { var w = W / cols.length; return cols.map(function (c, i) { return rect(i * w, 0, w + 0.5, H, c); }).join(""); }
+  function hstripes(W, H, cols) { var h = H / cols.length; return cols.map(function (c, i) { return rect(0, i * h, W, h + 0.5, c); }).join(""); }
+  function saltire(W, H, t, c) { return line(0, 0, W, H, t, c) + line(0, H, W, 0, t, c); }
+  function quarters(W, H, a, b, c, d) { return rect(0, 0, W / 2, H / 2, a) + rect(W / 2, 0, W / 2, H / 2, b) + rect(0, H / 2, W / 2, H / 2, c) + rect(W / 2, H / 2, W / 2, H / 2, d); }
+
+  var LW = 150, LH = 100, PW = 300, PH = 100, TW = 240, TH = 100;
+  var RECT = [[0, 0], [LW, 0], [LW, LH], [0, LH]];
+  var SWALLOW = [[0, 0], [LW, 0], [112, 50], [LW, LH], [0, LH]];
+  var PENNANT = [[0, 0], [PW, 30], [PW, 70], [0, PH]];
+  var TRI = [[0, 0], [TW, 50], [0, TH]];
+
+  function yankee() {
+    var out = rect(0, 0, LW, LH, "Y"), n = 10, s = (LW + LH) / n;
+    for (var k = 1; k < n; k += 2) { var d = k * s; out += poly([[d, 0], [d + s, 0], [d + s - LH, LH], [d - LH, LH]], "R"); }
+    return out;
+  }
+  function navySix() {
+    function band(a, b) {
+      var P = [[-1, -1 + a], [2, 2 + a], [2, 2 + b], [-1, -1 + b]];
+      return poly(P.map(function (p) { return [p[0] * LW, (1 - p[1]) * LH]; }), "B");
+    }
+    return rect(0, 0, LW, LH, "W") + band(-1 / 7, 1 / 7) + band(3 / 7, 5 / 7) + band(-5 / 7, -3 / 7);
+  }
+  function navyZero() {
+    var out = rect(0, 0, LW, LH, "W"), s = 22, t = s / 3;
+    [[25, 17], [125, 17], [75, 50], [25, 83], [125, 83]].forEach(function (p) {
+      out += rect(p[0] - s / 2, p[1] - t / 2, s, t, "B") + rect(p[0] - t / 2, p[1] - s / 2, t, s, "B");
+    });
+    return out;
+  }
+  function checks() { var o = ""; for (var r = 0; r < 4; r++) for (var c = 0; c < 4; c++) o += rect(c * 37.5, r * 25, 38, 25.5, (r + c) % 2 ? "W" : "B"); return o; }
+
+  // key -> [width, height, shape, body, kind]
+  var FLAGS = {
+    A: [LW, LH, SWALLOW, rect(0, 0, 75, LH, "W") + poly([[75, 0], [LW, 0], [112, 50], [LW, LH], [75, LH]], "B")],
+    B: [LW, LH, SWALLOW, rect(0, 0, LW, LH, "R")],
+    C: [LW, LH, RECT, hstripes(LW, LH, ["B", "W", "R", "W", "B"])],
+    D: [LW, LH, RECT, rect(0, 0, LW, 25, "Y") + rect(0, 25, LW, 50, "B") + rect(0, 75, LW, 25, "Y")],
+    E: [LW, LH, RECT, hstripes(LW, LH, ["B", "R"])],
+    F: [LW, LH, RECT, rect(0, 0, LW, LH, "W") + poly([[75, 0], [LW, 50], [75, LH], [0, 50]], "R")],
+    G: [LW, LH, RECT, vstripes(LW, LH, ["Y", "B", "Y", "B", "Y", "B"])],
+    H: [LW, LH, RECT, vstripes(LW, LH, ["W", "R"])],
+    I: [LW, LH, RECT, rect(0, 0, LW, LH, "Y") + circ(75, 50, 25, "K")],
+    J: [LW, LH, RECT, hstripes(LW, LH, ["B", "W", "B"])],
+    K: [LW, LH, RECT, vstripes(LW, LH, ["Y", "B"])],
+    L: [LW, LH, RECT, quarters(LW, LH, "Y", "K", "K", "Y")],
+    M: [LW, LH, RECT, rect(0, 0, LW, LH, "B") + saltire(LW, LH, 20, "W")],
+    N: [LW, LH, RECT, checks()],
+    O: [LW, LH, RECT, rect(0, 0, LW, LH, "Y") + poly([[0, 0], [LW, 0], [LW, LH]], "R")],
+    P: [LW, LH, RECT, rect(0, 0, LW, LH, "B") + rect(50, 33.3, 50, 33.4, "W")],
+    Q: [LW, LH, RECT, rect(0, 0, LW, LH, "Y")],
+    R: [LW, LH, RECT, rect(0, 0, LW, LH, "R") + rect(64, 0, 22, LH, "Y") + rect(0, 39, LW, 22, "Y")],
+    S: [LW, LH, RECT, rect(0, 0, LW, LH, "W") + rect(50, 33.3, 50, 33.4, "B")],
+    T: [LW, LH, RECT, vstripes(LW, LH, ["R", "W", "B"])],
+    U: [LW, LH, RECT, quarters(LW, LH, "R", "W", "W", "R")],
+    V: [LW, LH, RECT, rect(0, 0, LW, LH, "W") + saltire(LW, LH, 20, "R")],
+    W: [LW, LH, RECT, rect(0, 0, LW, LH, "B") + rect(25, 17, 100, 66, "W") + rect(50, 33.3, 50, 33.4, "R")],
+    X: [LW, LH, RECT, rect(0, 0, LW, LH, "W") + rect(64, 0, 22, LH, "B") + rect(0, 39, LW, 22, "B")],
+    Y: [LW, LH, RECT, yankee()],
+    Z: [LW, LH, RECT, poly([[0, 0], [LW, 0], [75, 50]], "Y") + poly([[0, 0], [75, 50], [0, LH]], "K") + poly([[LW, 0], [LW, LH], [75, 50]], "B") + poly([[0, LH], [LW, LH], [75, 50]], "R")],
+
+    P1: [PW, PH, PENNANT, rect(0, 0, PW, PH, "W") + circ(50, 50, 28, "R"), "pennant"],
+    P2: [PW, PH, PENNANT, rect(0, 0, PW, PH, "B") + circ(50, 50, 28, "W"), "pennant"],
+    P3: [PW, PH, PENNANT, vstripes(PW, PH, ["R", "W", "B"]), "pennant"],
+    P4: [PW, PH, PENNANT, rect(0, 0, PW, PH, "R") + rect(70, 0, 24, PH, "W") + rect(0, 38, PW, 24, "W"), "pennant"],
+    P5: [PW, PH, PENNANT, vstripes(PW, PH, ["Y", "B"]), "pennant"],
+    P6: [PW, PH, PENNANT, hstripes(PW, PH, ["K", "W"]), "pennant"],
+    P7: [PW, PH, PENNANT, hstripes(PW, PH, ["Y", "R"]), "pennant"],
+    P8: [PW, PH, PENNANT, rect(0, 0, PW, PH, "W") + rect(70, 0, 24, PH, "R") + rect(0, 38, PW, 24, "R"), "pennant"],
+    P9: [PW, PH, PENNANT, quarters(PW, PH, "W", "K", "R", "Y"), "pennant"],
+    P0: [PW, PH, PENNANT, vstripes(PW, PH, ["Y", "R", "Y"]), "pennant"],
+
+    N1: [LW, LH, RECT, hstripes(LW, LH, ["R", "Y", "R"])],
+    N2: [LW, LH, RECT, hstripes(LW, LH, ["Y", "R", "Y"])],
+    N3: [LW, LH, RECT, hstripes(LW, LH, ["B", "R", "B"])],
+    N4: [LW, LH, RECT, rect(0, 0, LW, LH, "R") + saltire(LW, LH, 20, "W")],
+    N5: [LW, LH, RECT, rect(0, 0, LW, LH, "Y") + saltire(LW, LH, 20, "B")],
+    N6: [LW, LH, RECT, navySix()],
+    N7: [LW, LH, RECT, vstripes(LW, LH, ["R", "W", "R"])],
+    N8: [LW, LH, RECT, vstripes(LW, LH, ["Y", "B", "Y"])],
+    N9: [LW, LH, RECT, vstripes(LW, LH, ["B", "W", "B"])],
+    N0: [LW, LH, RECT, navyZero()],
+
+    S1: [TW, TH, TRI, rect(0, 0, TW, TH, "B") + poly([[0, 16], [190, 50], [0, 84]], "Y"), "tri"],
+    S2: [TW, TH, TRI, vstripes(TW, TH, ["B", "W"]), "tri"],
+    S3: [TW, TH, TRI, rect(0, 0, TW, TH, "W") + rect(0, 34, TW, 32, "K"), "tri"],
+    S4: [TW, TH, TRI, rect(0, 0, TW, TH, "R") + rect(0, 32, 36, 36, "Y"), "tri"]
+  };
+
+
+  function drawFlag(key, label) {
+    var f = FLAGS[key], W = f[0], H = f[1], id = "c" + (++uid);
+    var pts = f[2].map(function (p) { return p.join(","); }).join(" ");
+    return '<svg viewBox="-2 -2 ' + (W + 4) + ' ' + (H + 4) + '" role="img" aria-label="' + label + '">' +
+      '<defs><clipPath id="' + id + '"><polygon points="' + pts + '"/></clipPath></defs>' +
+      '<g clip-path="url(#' + id + ')">' + f[3] + '</g>' +
+      '<polygon points="' + pts + '" fill="none" stroke="var(--outline)" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+  }
+
+  // ---------- Names and meanings ----------
+  var NAMES = {
+    A: "Alfa", B: "Bravo", C: "Charlie", D: "Delta", E: "Echo", F: "Foxtrot", G: "Golf", H: "Hotel",
+    I: "India", J: "Juliett", K: "Kilo", L: "Lima", M: "Mike", N: "November", O: "Oscar", P: "Papa",
+    Q: "Quebec", R: "Romeo", S: "Sierra", T: "Tango", U: "Uniform", V: "Victor", W: "Whiskey",
+    X: "X-ray", Y: "Yankee", Z: "Zulu"
+  };
+
+  // International Code of Signals, single-flag signals (paraphrased from Pub. 102)
+  var ICS = {
+    A: "I have a diver down. Keep well clear at slow speed.",
+    B: "I am taking in, discharging, or carrying dangerous goods.",
+    C: "Yes.",
+    D: "Keep clear of me. I am maneuvering with difficulty.",
+    E: "I am altering my course to starboard.",
+    F: "I am disabled. Communicate with me.",
+    G: "I require a pilot. (Fishing boats: I am hauling nets.)",
+    H: "I have a pilot on board.",
+    I: "I am altering my course to port.",
+    J: "I am on fire and have dangerous cargo on board. Keep well clear of me.",
+    K: "I wish to communicate with you.",
+    L: "You should stop your vessel instantly.",
+    M: "My vessel is stopped and making no way through the water.",
+    N: "No.",
+    O: "Man overboard!",
+    P: "In harbor: everyone report aboard, this vessel is about to sail. (Fishing boats at sea: my nets are caught on an obstruction.)",
+    Q: "My vessel is healthy and I request free pratique.",
+    R: null,
+    S: "I am operating astern propulsion.",
+    T: "Keep clear of me. I am engaged in pair trawling.",
+    U: "You are running into danger.",
+    V: "I require assistance.",
+    W: "I require medical assistance.",
+    X: "Stop carrying out your intentions and watch for my signals.",
+    Y: "I am dragging my anchor.",
+    Z: "I require a tug. (Fishing boats: I am shooting nets.)"
+  };
+
+  // US Navy single-flag meanings, publicly circulated only. Gaps are deliberate.
+  var NAVY = {
+    A: "Divers or friendly explosive ordnance disposal personnel are down.",
+    B: "Ship is taking in, discharging, or handling explosives or fuel.",
+    C: "Yes.",
+    D: "Keep clear. I am maneuvering with difficulty.",
+    E: "Directional signal.",
+    F: "Flight operations underway.",
+    I: "Coming alongside.",
+    K: "Personnel are working aloft or over the side.",
+    L: "Radiation hazard. Do not approach within the stated distance.",
+    M: "The duty medical officer is on board.",
+    N: "No.",
+    O: "Man overboard!",
+    P: "In port: all personnel return to the ship, she is proceeding to sea.",
+    Q: "Boat recall. All boats return to the ship.",
+    R: "Preparing to replenish at sea.",
+    S: "Conducting flag hoist drill.",
+    T: "Do not pass ahead of me.",
+    Y: "Ship has visual communications duty."
+  };
+
+  var ORD = ["1st", "2nd", "3rd", "4th"];
+
+
+  var LOOKS = ["chart", "bridge", "plain"];
+
+  // ---------- State ----------
+  var state = { msg: "", mode: "ics", real: false, look: "chart" };
+
+  function clean(s) {
+    return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9 ]/g, "").replace(/ {2,}/g, " ").slice(0, 60);
+  }
+
+  function readHash() {
+    var p = new URLSearchParams(location.hash.slice(1));
+    state.msg = clean(p.get("m") || "");
+    state.mode = p.get("s") === "navy" ? "navy" : "ics";
+    state.real = p.get("h") === "1";
+    state.look = LOOKS.indexOf(p.get("l")) > -1 ? p.get("l") : "chart";
+  }
+
+  function writeHash() {
+    var p = new URLSearchParams();
+    if (state.msg.trim()) p.set("m", state.msg.trim());
+    if (state.mode === "navy") p.set("s", "navy");
+    if (state.real) p.set("h", "1");
+    if (state.look !== "chart") p.set("l", state.look);
+    var h = p.toString();
+    history.replaceState(null, "", h ? "#" + h : location.pathname + location.search);
+  }
+
+  function keyFor(ch) {
+    if (/[A-Z]/.test(ch)) return ch;
+    return (state.mode === "navy" ? "N" : "P") + ch;
+  }
+
+  function describe(key, ch) {
+    var navy = state.mode === "navy";
+    if (/^[A-Z]$/.test(key)) {
+      var m = navy ? NAVY[key] : ICS[key];
+      return { name: key, sub: NAMES[key], meaning: m || null, none: navy ? "No publicly known Navy meaning." : "No single-flag meaning." };
+    }
+    return { name: ch, sub: navy ? "Numeral flag" : "Numeral pennant", meaning: null, none: "Just the number." };
+  }
+
+  // Substitute N repeats whatever stands at position N of the hoist (Pub. 102).
+  function buildHoists() {
+    var maxSubs = state.mode === "navy" ? 4 : 3;
+    return state.msg.split(" ").filter(Boolean).map(function (word) {
+      var items = [], used = {};
+      word.split("").forEach(function (ch) {
+        var key = keyFor(ch);
+        if (state.real) {
+          var seen = false;
+          for (var k = 0; k < items.length; k++) {
+            if (items[k].key === key || items[k].repeatKey === key) {
+              seen = true;
+              var n = k + 1;
+              if (n <= maxSubs && !used[n]) {
+                used[n] = true;
+                items.push({ key: "S" + n, ch: ch, sub: n, repeatKey: key });
+                return;
+              }
+            }
+          }
+          if (seen) { items.push({ key: key, ch: ch, stuck: true }); return; }
+        }
+        items.push({ key: key, ch: ch });
+      });
+      return items;
+    });
+  }
+
+  // ---------- Render ----------
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function dtg() {
+    var d = new Date(), mon = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][d.getUTCMonth()];
+    return pad(d.getUTCDate()) + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + "Z " + mon + " " + String(d.getUTCFullYear()).slice(2);
+  }
+  function tagFor(it) {
+    if (it.sub) return ORD[it.sub - 1] + " sub";
+    if (/^[A-Z]$/.test(it.key)) return NAMES[it.key];
+    return it.ch;
+  }
+
+  function render() {
+    document.body.setAttribute("data-look", state.look);
+    Array.prototype.forEach.call(document.querySelectorAll("[data-look-btn]"), function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-look-btn") === state.look));
+    });
+    $("mode-ics").setAttribute("aria-pressed", String(state.mode === "ics"));
+    $("mode-navy").setAttribute("aria-pressed", String(state.mode === "navy"));
+    $("navywarn").hidden = state.mode !== "navy";
+    $("real").checked = state.real;
+    $("share").disabled = !state.msg.trim();
+    $("msghdr").textContent = "R " + dtg() + "\nFM SIGNAL BRIDGE\nTO ALL HANDS\nBT\nUNCLAS\nSUBJ/FLAG HOIST TRANSLATION//";
+
+    var hoists = buildHoists();
+    var strip = $("strip"), list = $("hoists");
+    strip.innerHTML = "";
+    list.innerHTML = "";
+
+    if (!hoists.length) {
+      strip.appendChild(el("span", "empty", state.look === "chart" ? "NO HOIST. ENTER MESSAGE TEXT." : "Your flags will show up here."));
+      return;
+    }
+
+    hoists.forEach(function (items, h) {
+      var group = el("span", "group");
+      items.forEach(function (it) {
+        var cell = el("span", "cell");
+        cell.innerHTML = drawFlag(it.key, it.sub ? ORD[it.sub - 1] + " substitute" : it.ch);
+        cell.appendChild(el("span", "tag", tagFor(it)));
+        group.appendChild(cell);
+      });
+      strip.appendChild(group);
+
+      var sec = el("section", "hoist");
+      if (hoists.length > 1) sec.appendChild(el("h2", null, "Hoist " + (h + 1) + ": " + items.map(function (i) { return i.ch; }).join("")));
+
+      items.forEach(function (it) {
+        var row = el("div", "row");
+        var f = el("div", "flag");
+        f.innerHTML = drawFlag(it.key, it.sub ? ORD[it.sub - 1] + " substitute" : it.ch);
+        row.appendChild(f);
+
+        var body = el("div", "txt");
+        var name = el("div", "name");
+        var d;
+        if (it.sub) {
+          d = describe(it.repeatKey, it.ch);
+          name.textContent = ORD[it.sub - 1] + " substitute";
+          body.appendChild(name);
+          body.appendChild(el("div", "note", "Repeats flag " + it.sub + " of this hoist (" + it.ch + (/^[A-Z]$/.test(it.ch) ? ", " + d.sub : "") + ")."));
+        } else {
+          d = describe(it.key, it.ch);
+          name.appendChild(el("span", "letter", d.name));
+          name.appendChild(document.createTextNode(" " + d.sub));
+          body.appendChild(name);
+        }
+        body.appendChild(d.meaning ? el("div", "meaning", d.meaning) : el("div", "meaning none", d.none));
+        if (it.stuck) body.appendChild(el("div", "note", "No substitute left for this repeat. A real signalman would split it into a second hoist."));
+        row.appendChild(body);
+        sec.appendChild(row);
+      });
+      list.appendChild(sec);
+    });
+  }
+
+  // ---------- Events ----------
+  var input = $("msg");
+  input.addEventListener("input", function () {
+    var c = clean(input.value);
+    if (c !== input.value.toUpperCase()) {
+      var pos = input.selectionStart;
+      input.value = c;
+      try { input.setSelectionRange(Math.min(pos, c.length), Math.min(pos, c.length)); } catch (e) {}
+    }
+    state.msg = c;
+    writeHash();
+    render();
+  });
+  $("mode-ics").addEventListener("click", function () { state.mode = "ics"; writeHash(); render(); });
+  $("mode-navy").addEventListener("click", function () { state.mode = "navy"; writeHash(); render(); });
+  $("real").addEventListener("change", function (e) { state.real = e.target.checked; writeHash(); render(); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-look-btn]"), function (b) {
+    b.addEventListener("click", function () { state.look = b.getAttribute("data-look-btn"); writeHash(); render(); });
+  });
+
+  var toastTimer;
+  function toast(t) {
+    var e = $("toast");
+    e.textContent = t;
+    e.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { e.classList.remove("show"); }, 1800);
+  }
+  $("share").addEventListener("click", function () {
+    writeHash();
+    var url = location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () { toast("Link copied"); }, function () { window.prompt("Copy this link:", url); });
+    } else {
+      window.prompt("Copy this link:", url);
+    }
+  });
+
+  window.addEventListener("hashchange", function () { readHash(); input.value = state.msg; render(); });
+
+  readHash();
+  input.value = state.msg;
+  render();
+})();
+</script>
+</body>
+</html>
