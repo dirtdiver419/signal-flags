@@ -30,3 +30,9 @@ A few codes are absent from the book itself (28 general and 122 medical), so the
 - It is not affiliated with or endorsed by the National Geospatial-Intelligence Agency or the U.S. Navy.
 - Navy single-flag meanings come from publicly circulated sources and are unofficial. Pub. 102 has no Navy single-flag table. Only the U.S./Russia appendix signals are official Navy content in it. Many letters have no public Navy meaning and are left blank on purpose.
 - Flag artwork is drawn in code from the standard designs. Navy numerals 6 and 0 and the 4th substitute were checked against fewer sources than the rest.
+
+## License
+
+The code and original content of this project (the page, its flag artwork, its labels and this README, including the Navy single-flag compilation) are licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0). The full text is in `LICENSE`. In short: you may use, copy and change it for personal and other noncommercial purposes, and you may not sell it or use it commercially. It is provided as is, with no warranty and no liability.
+
+The Pub. 102 text is a U.S. government work with no copyright claimed. It is not covered by this license, and anyone may reuse it from the original publication.
